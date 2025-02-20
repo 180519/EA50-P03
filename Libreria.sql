@@ -26,10 +26,7 @@
 --email (VARCHAR)
 
 
--- Obtener todos los libros prestados actualmente:
--- Listar los usuarios que han prestado libros en el último mes:
--- Encontrar los libros que no han sido prestados nunca:
--- Contar el número de préstamos por usuario:
+
 
 --                        Tablas
 --LIBROS
@@ -37,7 +34,7 @@
 SET DateStyle = 'ISO, DMY';
 
 CREATE TABLE LIBROS(
-  id_libro INT PRIMARY KEY,
+  id_libro SERIAL PRIMARY KEY,
   titulo VARCHAR,
   autor VARCHAR,
   anio_publicacion INT
@@ -52,7 +49,7 @@ CREATE TABLE USUARIOS(
 
 --PRESTAMOS
 CREATE TABLE PRESTAMOS(
-  id_prestamo INT PRIMARY KEY,
+  id_prestamo SERIAL PRIMARY KEY,
   id_libro INT,
   FOREIGN KEY(id_libro) REFERENCES LIBROS(id_libro),
   id_usuario INT,
@@ -61,7 +58,7 @@ CREATE TABLE PRESTAMOS(
   fecha_devolucion DATE
 );
 
-INSERT INTO LIBROS VALUES
+INSERT INTO LIBROS(id_libro,titulo,autor,anio_publicacion) VALUES
 (001,'El que susurra en la oscuridad','H.P. Lovecraft',1931),
 (002,'Las ventajas de ser invisible','Stephen Chbosky',1999),
 (003,'El que susurra en la oscuridad','H.P. Lovecraft',1931),
@@ -77,24 +74,36 @@ INSERT INTO USUARIOS VALUES
 (175680, 'Sebastián Heredia Pardo','175680@upslp.edu.mx'),
 (176412, 'Antonio Morales Quiroz De Jesus','176412@upslp.edu.mx');
 
-INSERT INTO PRESTAMOS (id_prestamo,fecha_prestamo,fecha_devolucion) VALUES
-(0001,'10-02-2025','13-01-2025'),
-(0002,'11-02-2025','21-02-2025'),
-(0003,'12-02-2025','22-03-2025'),
-(0004,'13-02-2025','23-12-2024'),
-(0005,'14-02-2025','24-02-2025');
+
+INSERT INTO PRESTAMOS (id_prestamo,id_libro,id_usuario,fecha_prestamo,fecha_devolucion) VALUES
+(0001,1,177890,'10-02-2025','13-01-2025'),
+(0002,2,180519,'11-02-2025','21-02-2025'),
+(0003,3,180519,'12-02-2025','22-03-2025'),
+(0004,4,175680,'13-01-2025','23-12-2023'),
+(0005,5,180519,NULL,NULL),
+(0006,6,180519,NULL,NULL);
+
 
 SELECT * FROM LIBROS;
 SELECT * FROM USUARIOS;
 SELECT * FROM PRESTAMOS;
 
-SELECT id_prestamo, fecha_devolucion FROM PRESTAMOS WHERE fecha_devolucion < current_date;
+--SELECT * FROM LIBROS;
+--SELECT * FROM USUARIOS;
+--SELECT * FROM PRESTAMOS;
 
-SELECT id_libro,id_usuario,fecha_devolucion FROM PRESTAMOS
+-- Contar el número de préstamos por usuario:
+SELECT id_prestamo, USUARIOS.nombre, LIBROS.titulo FROM PRESTAMOS
 JOIN USUARIOS ON PRESTAMOS.id_usuario = USUARIOS.id_usuario
-WHERE fecha_prestamo > current_date AND fecha_devolucion < current_date;
-
-
-SELECT id_libro,titulo FROM LIBROS
-JOIN PRESTAMOS ON LIBROS.id_libro = PRESTAMOS.id_libro
-WHERE PRESTAMOS.fecha_prestamo IS NULL;
+JOIN LIBROS ON PRESTAMOS.id_libro = LIBROS.id_libro;
+-- Obtener todos los libros prestados actualmente:
+SELECT id_prestamo, fecha_devolucion FROM PRESTAMOS WHERE fecha_devolucion < current_date;
+-- Listar los usuarios que han prestado libros en el último mes:
+SELECT id_prestamo, USUARIOS.nombre, fecha_prestamo FROM PRESTAMOS
+JOIN USUARIOS ON PRESTAMOS.id_usuario = USUARIOS.id_usuario
+JOIN LIBROS ON PRESTAMOS.id_libro = LIBROS.id_libro
+WHERE fecha_prestamo > '01-02-2025';
+-- Encontrar los libros que no han sido prestados nunca:
+SELECT id_prestamo, LIBROS.titulo FROM PRESTAMOS
+JOIN LIBROS ON PRESTAMOS.id_libro = LIBROS.id_libro
+ WHERE fecha_prestamo IS NULL;
